@@ -12,6 +12,8 @@ const eventItem = (props) => {
     authUserId,
     creatorId,
     onDetail,
+    onDelete,
+    onEdit,
   } = props;
   return (
     <li className="event__list-item" key={eventId}>
@@ -23,7 +25,16 @@ const eventItem = (props) => {
       </div>
       <div>
         {authUserId === creatorId
-          ? <p>Your the owner of this event.</p>
+          ? (
+            <React.Fragment>
+              <button className="btn" type="button" onClick={onEdit.bind(this, eventId)}>
+                <i className="fas fa-edit" />
+              </button>
+              <button className="btn" type="button" onClick={onDelete.bind(this, eventId)}>
+                <i className="fas fa-trash" />
+              </button>
+            </React.Fragment>
+          )
           : (
             <button className="btn" type="button" onClick={onDetail.bind(this, eventId)}>
               <i className="fas fa-info-circle" />
@@ -43,6 +54,8 @@ eventItem.propTypes = {
   authUserId: PropTypes.string,
   creatorId: PropTypes.string.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
 };
 
 eventItem.defaultProps = {

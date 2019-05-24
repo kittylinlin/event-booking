@@ -9,6 +9,7 @@ import {
 import LoginPage from './pages/Login';
 import SignUpPage from './pages/SignUp';
 import EventsPage from './pages/Events';
+import BookingsPage from './pages/Bookings';
 import MainNavigation from './components/Navigation/MainNavigation';
 
 import './App.css';
@@ -22,6 +23,7 @@ const App = () => (
         <Route path="/login" component={LoginPage} />
         <Route path="/signUp" component={SignUpPage} />
         <Route path="/events" component={EventsPage} />
+        <Route path="/bookings" component={BookingsPage} />
       </Switch>
     </main>
   </BrowserRouter>

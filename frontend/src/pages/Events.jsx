@@ -18,21 +18,18 @@ class EventsPage extends Component {
     events: [],
     isLoading: false,
     selectedEvent: null,
+    title: '',
+    price: '',
     date: new Date(),
-    alert: false,
+    description: '',
+    createAlert: false,
     message: '',
+    deleteAlert: false,
   };
 
   isActive = true;
 
   Auth = new AuthHelperMethods();
-
-  constructor(props) {
-    super(props);
-    this.titleElRef = React.createRef();
-    this.priceElRef = React.createRef();
-    this.descriptionElRef = React.createRef();
-  }
 
   componentDidMount() {
     this.fetchEvents();
@@ -46,32 +43,44 @@ class EventsPage extends Component {
     this.setState({ creating: true });
   }
 
-  changeDate = (date) => {
+  handleInputChange = ({ target }) => {
+    this.setState({ [target.name]: target.value });
+  }
+
+  handleDateChange = (date) => {
     this.setState({ date });
   }
 
-  closeAlert = () => {
+  closeCreateAlert = () => {
     this.setState({
-      alert: false,
+      createAlert: false,
       creating: true,
+    });
+  }
+
+  closeDeleteAlert = () => {
+    this.setState({
+      deleteAlert: false,
     });
   }
 
   modalConfirmHandler = () => {
     this.setState({ creating: false });
-    const title = this.titleElRef.current.value;
-    const price = +this.priceElRef.current.value;
-    const { date } = this.state;
-    const description = this.descriptionElRef.current.value;
+    const {
+      title,
+      price,
+      date,
+      description,
+    } = this.state;
 
     if (
       isEmpty(title.trim())
-      || price < 0
+      || isEmpty(price)
       || !date
       || isEmpty(description.trim())
     ) {
       this.setState({
-        alert: true,
+        createAlert: true,
         message: 'Make sure all fields are filled!',
       });
       return;
@@ -91,7 +100,7 @@ class EventsPage extends Component {
       `,
       variables: {
         title,
-        price,
+        price: +price,
         date: date.toISOString(),
         description,
       },
@@ -125,6 +134,38 @@ class EventsPage extends Component {
       const selectedEvent = prevState.events.find(event => event._id === eventId);
       return { selectedEvent };
     });
+  }
+
+  deleteEventHandler = (eventId) => {
+    if (!this.Auth.loggedIn()) {
+      return;
+    }
+    const requestBody = {
+      query: `
+        mutation DeleteEvent($eventId: ID!) {
+          deleteEvent(eventId: $eventId)
+        }
+      `,
+      variables: {
+        eventId,
+      },
+    };
+
+    this.Auth.fetch({
+      body: JSON.stringify(requestBody),
+    })
+      .then(() => {
+        this.setState((prevState) => {
+          const events = prevState.events.filter(event => event._id !== eventId);
+          return { events };
+        });
+      })
+      .catch((error) => {
+        this.setState({
+          deleteAlert: true,
+          message: error.message,
+        });
+      });
   }
 
   bookEventHandler = () => {
@@ -201,19 +242,33 @@ class EventsPage extends Component {
       events,
       isLoading,
       selectedEvent,
+      title,
+      price,
       date,
-      alert,
+      description,
+      createAlert,
+      deleteAlert,
       message,
     } = this.state;
 
     return (
       <React.Fragment>
-        {(creating || selectedEvent || alert) && <Backdrop />}
-        {alert && (
+        {(creating || selectedEvent || createAlert || deleteAlert) && <Backdrop />}
+        {createAlert && (
           <Modal
             title=""
             canConfirm
-            onConfirm={this.closeAlert}
+            onConfirm={this.closeCreateAlert}
+            confirmText="OK"
+          >
+            <h1>{message}</h1>
+          </Modal>
+        )}
+        {deleteAlert && (
+          <Modal
+            title=""
+            canConfirm
+            onConfirm={this.closeDeleteAlert}
             confirmText="OK"
           >
             <h1>{message}</h1>
@@ -232,13 +287,25 @@ class EventsPage extends Component {
               <div className="form-control">
                 <label htmlFor="title">
                   Title
-                  <input type="text" id="title" ref={this.titleElRef} />
+                  <input
+                    type="text"
+                    id="title"
+                    value={title}
+                    name="title"
+                    onChange={this.handleInputChange}
+                  />
                 </label>
               </div>
               <div className="form-control">
                 <label htmlFor="price">
                   Price
-                  <input type="number" id="price" ref={this.priceElRef} />
+                  <input
+                    type="number"
+                    id="price"
+                    value={price}
+                    name="price"
+                    onChange={this.handleInputChange}
+                  />
                 </label>
               </div>
               <div className="form-control">
@@ -247,7 +314,7 @@ class EventsPage extends Component {
                   <DatePicker
                     dateFormat="yyyy-MM-dd"
                     selected={date}
-                    onChange={this.changeDate}
+                    onChange={this.handleDateChange}
                     minDate={new Date()}
                   />
                 </div>
@@ -255,7 +322,13 @@ class EventsPage extends Component {
               <div className="form-control">
                 <label htmlFor="description">
                   Description
-                  <textarea id="description" rows="4" ref={this.descriptionElRef} />
+                  <textarea
+                    id="description"
+                    rows="4"
+                    value={description}
+                    name="description"
+                    onChange={this.handleInputChange}
+                  />
                 </label>
               </div>
             </form>
@@ -292,6 +365,8 @@ class EventsPage extends Component {
               events={events}
               authUserId={this.Auth.userId()}
               onViewDetail={this.showDetailHandler}
+              onDelete={this.deleteEventHandler}
+              onEdit={this.editEventHandler}
             />
           )
         }

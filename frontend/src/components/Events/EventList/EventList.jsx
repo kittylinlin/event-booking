@@ -6,7 +6,12 @@ import './EventList.css';
 
 const eventList = (props) => {
   let { events } = props;
-  const { authUserId, onViewDetail } = props;
+  const {
+    authUserId,
+    onViewDetail,
+    onDelete,
+    onEdit,
+  } = props;
   events = events.map(event => (
     <EventItem
       key={event._id}
@@ -17,6 +22,8 @@ const eventList = (props) => {
       date={event.date}
       creatorId={event.creator._id}
       onDetail={onViewDetail}
+      onDelete={onDelete}
+      onEdit={onEdit}
     />
   ));
 
@@ -31,6 +38,8 @@ eventList.propTypes = {
   events: PropTypes.arrayOf(PropTypes.object).isRequired,
   authUserId: PropTypes.string,
   onViewDetail: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
 };
 
 eventList.defaultProps = {

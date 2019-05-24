@@ -5,6 +5,9 @@ import BookingList from '../components/Bookings/BookingList/BookingList';
 import BookingChart from '../components/Bookings/BookingChart/BookingChart';
 import BookingControls from '../components/Bookings/BookingControls/BookingControls';
 
+import AuthHelperMethods from '../components/Auth/AuthHelperMethods';
+import withAuth from '../components/Auth/withAuth';
+
 class BookingsPage extends Component {
   state = {
     isLoading: false,
@@ -12,13 +15,14 @@ class BookingsPage extends Component {
     outputType: 'list',
   }
 
+  Auth = new AuthHelperMethods();
+
   componentDidMount() {
     this.fetchBookings();
   }
 
   fetchBookings = () => {
     this.setState({ isLoading: true });
-    const { token } = this.context;
 
     const requestBody = {
       query: `
@@ -37,20 +41,9 @@ class BookingsPage extends Component {
       `,
     };
 
-    fetch('http://localhost:8000/graphql', {
-      method: 'POST',
+    this.Auth.fetch({
       body: JSON.stringify(requestBody),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
     })
-      .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error('Failed!');
-        }
-        return res.json();
-      })
       .then((resData) => {
         const { bookings } = resData.data;
         this.setState({ bookings, isLoading: false });
@@ -149,4 +142,4 @@ class BookingsPage extends Component {
   }
 }
 
-export default BookingsPage;
+export default withAuth(BookingsPage);

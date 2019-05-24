@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactRouterPropTypes from 'react-router-prop-types';
 import AuthHelperMethods from './AuthHelperMethods';
 
 /* A higher order component is frequently written as a function that returns a class. */
@@ -6,6 +7,10 @@ export default function withAuth(AuthComponent) {
   const Auth = new AuthHelperMethods();
 
   return class AuthWrapped extends Component {
+    static propTypes = {
+      history: ReactRouterPropTypes.history.isRequired,
+    }
+
     state = {
       confirm: null,
       loaded: false,
@@ -25,7 +30,6 @@ export default function withAuth(AuthComponent) {
         /* Try to get confirmation message from the Auth helper. */
         try {
           const confirm = Auth.getConfirm();
-          console.log('confirmation is:', confirm);
           this.setState({
             confirm,
             loaded: true,
@@ -47,7 +51,6 @@ export default function withAuth(AuthComponent) {
       const { history } = this.props;
       if (loaded) {
         if (confirm) {
-          console.log('confirmed!');
           return (
             /* component that is currently being wrapper(App.js) */
             <AuthComponent
@@ -56,7 +59,6 @@ export default function withAuth(AuthComponent) {
             />
           );
         }
-        console.log('not confirmed!');
         return null;
       }
       return null;

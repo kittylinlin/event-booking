@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import ReactRouterPropTypes from 'react-router-prop-types';
 import { isEmail } from 'validator';
 import { isEmpty } from 'lodash';
 
@@ -10,6 +11,10 @@ import AuthHelperMethods from '../components/Auth/AuthHelperMethods';
 import './Auth.css';
 
 class SignUpPage extends Component {
+  static propTypes = {
+    history: ReactRouterPropTypes.history.isRequired,
+  }
+
   Auth = new AuthHelperMethods();
 
   state = {
